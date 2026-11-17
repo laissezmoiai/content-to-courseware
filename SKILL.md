@@ -53,9 +53,9 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 | 输入 | 做法 |
 |---|---|
 | YouTube / B站 视频 | 先抓人工字幕 → 再抓自动字幕（`yt-dlp --write-subs --write-auto-subs --skip-download --sub-format vtt`） |
-| 无字幕视频 / 本地 mp4 | `ffmpeg -i in.mp4 -vn -ac 1 -ar 16000 audio.wav` 后走 faster-whisper（`scripts/ingest_media.sh`） |
+| 无字幕视频 / 本地 mp4 | `ffmpeg -i in.mp4 -vn -ac 1 -ar 16000 audio.wav` 后走 faster-whisper（`scripts/ingest_media.sh`）；转写后端优先级见下方「转写后端与双稿比对」 |
 | B 站（实战教训，直连必撞） | 元数据与直链走 `r.jina.ai` 代理（直连 API 返回 412 风控页）；`playurl` 必须用 avid（bvid 会 401）；单集下载失败换 `durl[0].backup_url` 备链；出处链接格式 `?p=<集>&t=<秒>` |
-| 多集系列批量转写 | 逐集按上法抽音频成 `sources/media/NN.wav`，然后 `python3 scripts/asr.py <系列目录> --prompt "<术语 hotwords>"` —— 转写全部音频并合并成 `sources/raw.md`，每集自带 `# 第N集` 标题 |
+| 多集系列批量转写 | 逐集按上法抽音频成 `sources/media/NN.wav`，然后 `python3 scripts/asr.py <系列目录> --prompt "<术语 hotwords>"` —— `--prompt` 传的是 **hotwords 参数**（每个窗口生效；initial_prompt 只护头 30 秒，等于没给）。**重跑/换模型/换提示词前必须先清 `sources/subs/*.md`**——续跑逻辑会复用旧分段，产生「假重转写」（实测：新 raw.md 与旧稿 md5 完全相同才暴露）。合并成 `sources/raw.md`，每集自带 `# 第N集` 标题 |
 | 关键画面（板书 / PPT / 图表） | `ffmpeg -vf fps=1/30` 抽帧 → 帧按 `frames/epNN-MMSS.jpg` 命名（MM:SS 分秒，秒必须 <60）→ 需要理解画面时用 `gsk understand_images -i <frame>`，**返回原文存同名 `.txt`**——被卡片引用的帧必须带 `.txt`，且 `.txt` 一旦存在不重做 |
 | PDF | `pdftotext -layout`；表格多的页面 fallback 到 `pdfplumber` |
 | DOCX / PPTX | `python-docx` / `python-pptx`，按段落和页码输出 |
@@ -68,6 +68,18 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 - `sources/index.json` — `{章节标题, 起止时间/页码, 一句话主题}`
 
 > 没有时间戳/页码的文本，等于无法验证的文本。抓不到定位就明说，别硬编。
+
+### 转写后端与双稿比对（wb-adv 盲测实测，2026-11-17）
+
+| 后端 | 条件 | 说明 |
+|---|---|---|
+| 完整 Large-V3（用户本机 MLX，fp16） | 用户机器装有 mlx-whisper | 把视频原件交给用户跑 `python -m mlx_whisper in.mp4 --model mlx-community/whisper-large-v3-mlx --language zh --output-format json`；json 带起止秒，转成 `[MM:SS]` 逐行放回 `sources/`。mlx-whisper **没有 hotwords 参数**——正词放 `--initial-prompt`（只护头 30 秒，残留靠双稿比对兜底），保持 `--condition-on-previous-text True` 让语境往下传 |
+| faster-whisper large-v3-turbo（沙箱默认） | 内存占用小，沙箱可跑 | `deepdml/faster-whisper-large-v3-turbo-ct2`，int8、`hotwords` + `beam_size=5`。实测 16:36 视频 396.7 秒，错词形态 60+ 种 → 9 种 |
+| faster-whisper large-v3 / medium | **沙箱跑不动** | 4GB 内存加载即被 OOM 杀（exit 137），不要再试；完整 Large-V3 走上面的本机 MLX 路线 |
+
+**双稿比对**：本机 Large-V3 稿与沙箱 turbo 稿逐行 diff——一致行「双稿确认」直接进 corrected；不一致行为疑点行，走**烧录字幕条仲裁**：按行时间戳抽帧、裁底部字幕条放大 4 倍（576×360 源用 `crop=576:58:0:298,scale=2304:232:flags=lanczos`，按实际分辨率换算）、`gsk understand_images` 逐字抄录（指令必须写明「逐字抄录、读不清标〔?〕、不许概括」），帧文件名进依据栏；字幕读不清才标〔?〕交用户定。实测：字幕比语音滞后 1–2 秒，对行时必须对齐偏移。tesseract（chi_sim）在 576×360 字幕小字上输出碎屑，不可用。
+
+**Gemini 视频理解 pass（P4 待测，沙箱无 API key 未验证）**：3.8 Flash 一次喂全片同时听音频+看画面，产出 ①烧录字幕稿 ②界面正词清单（直接喂回 hotwords 闭环）③错词嫌疑表。第三方实测称其「读得快但易漏小字和角落信息」，提示词须单列逐字抄录要求，必要时按 2 分钟切段、调高 media_resolution。**转写主体仍归 Whisper**——Gemini 音频转写时间戳漂移有实测报告（60 秒后开始），逐字摘录的证据链不能押在它上面。无 key 时降级到字幕条仲裁路线。
 
 ## 阶段 1 · 结构解剖（Adler 四问）
 

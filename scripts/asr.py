@@ -39,9 +39,9 @@ for p in sorted(glob.glob(os.path.join(src, 'media', '*.wav'))):
     out = os.path.join(src, 'subs', f'{n:02d}.md')
     if not os.path.exists(out):
         t = time.time()
-        segs, _ = m.transcribe(load(p), language='zh', beam_size=1, vad_filter=True,
+        segs, _ = m.transcribe(load(p), language='zh', beam_size=5, vad_filter=True,
                                condition_on_previous_text=False,
-                               initial_prompt=a.prompt or None)
+                               hotwords=a.prompt or None)
         lines = [f'[{int(s.start // 60):02d}:{int(s.start % 60):02d}] {s.text.strip()}'
                  for s in segs]
         head = f'# 第{n}集 {titles.get(str(n), "")}'.rstrip()

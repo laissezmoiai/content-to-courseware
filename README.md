@@ -32,3 +32,6 @@ Python 3.10+；`pip install faster-whisper`；系统 `ffmpeg`（含 ffprobe）�
 2. 冻结指纹暂不含段落性质与依据帧——P5
 3. 只有本地文件、登记表无来源链接的素材，渲染会报错「登记表里找不到系列 X 的来源链接」（定位点解析得出来、链接拼不出来时的准确报错；定位点本身解析失败才报「定位点读不出来」）——P3 顺手加「本地文件」分支
 4. `ingest_media.sh` 是单视频路径：帧输出序号命名、文本不在 `sources/`、无校正稿生成，与检查器不匹配——多集走 asr.py 路线，单视频盲测前先用手工命令补齐
+5. asr.py 续跑逻辑复用 `subs/` 旧分段，会产生「假重转写」（新 raw.md 与旧稿 md5 相同）——重跑/换模型/换提示词前必须先清 `sources/subs/*.md`（wb-adv 盲测实测）
+6. faster-whisper 的 `initial_prompt` 只作用于第一个 30 秒窗口，术语 hotwords 必须走 `hotwords` 参数（2026-11-17 起 asr.py 已改，beam_size 同步升到 5）；沙箱 4GB 跑不动 large-v3/medium（OOM exit 137），沙箱内用 large-v3-turbo，完整 Large-V3 走用户本机 MLX + 双稿比对（SKILL.md 阶段 0）
+7. 帧识别（gsk understand_images）返回的是转述型描述，不是逐字抄录——版本号等「看似精确」的转述（实测出现过 `WorkBuddy v1.x.x`，画面上不可能有）不可当画面真值；识别指令必须写明逐字抄录、〔?〕占位、不许概括
