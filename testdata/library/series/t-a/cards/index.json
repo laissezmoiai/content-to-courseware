@@ -1,0 +1,37 @@
+{
+  "series": "t-a",
+  "cards": [
+    {
+      "id": "A-G-01",
+      "type": "G",
+      "topic": "T01",
+      "title": "工作模式",
+      "status": "附录级",
+      "has_frame": false
+    },
+    {
+      "id": "A-P-01",
+      "type": "P",
+      "topic": "T01",
+      "title": "先想清楚再动手",
+      "status": "正文级",
+      "has_frame": false
+    },
+    {
+      "id": "A-S-01",
+      "type": "S",
+      "topic": "T01",
+      "title": "把文件交给 AI 的演示",
+      "status": "正文级",
+      "has_frame": true
+    },
+    {
+      "id": "A-X-01",
+      "type": "X",
+      "topic": "T02",
+      "title": "把导航做成装饰",
+      "status": "附录级",
+      "has_frame": false
+    }
+  ]
+}
