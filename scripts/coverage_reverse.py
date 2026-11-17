@@ -132,8 +132,13 @@ def check_ev(r, name, rg):
     frames, bad = ev_frames(cell, rg[0])
     for b in bad:
         R.e(f'{name}：依据帧{b}')
+    kind = (r.get('性质', '') or '').strip()
     if not frames and not bad:
-        R.e(f'{name}：依据帧没填。每段至少一张落在本段内的帧')
+        if kind == '演示':
+            R.e(f'{name}：依据帧没填。演示段至少一张落在本段内的帧')
+        elif kind == '讲解':
+            R.w(f'{name}：讲解段没填依据帧（讲解可只凭口播，填了便于回查画面）')
+        return
     for mm, ss in frames:
         t = mm * 60 + ss
         if not rg[1] <= t < rg[2]:

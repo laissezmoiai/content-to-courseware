@@ -148,7 +148,7 @@ def put(m):
         R.e(f'{cid}：在草稿里放了两次')
         return ''
     if field(cards[cid], '状态') != '正文级':
-        R.e(f'{cid}：附录级的卡不能放进正文')
+        R.w(f'{cid}：已是附录级，草稿里的正文占位自动改为进附录（占位可留可删）')
         return ''
     placed.append(cid)
     return render(cards[cid])
