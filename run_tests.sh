@@ -12,7 +12,7 @@ rm -rf "$R"/cards && mkdir -p "$R"/cards
 touch "$R/frames/ep01-0040.txt"
 
 echo "== [0.5] 从模板生成 draft.html =="
-python3 scripts/gen_draft.py .
+python3 testdata/gen_draft.py .
 
 echo "== [1] coverage_reverse --freeze（期望 0 错）=="
 python3 scripts/coverage_reverse.py "$R" --freeze

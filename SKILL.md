@@ -54,6 +54,7 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 |---|---|
 | YouTube / B站 视频 | 先抓人工字幕 → 再抓自动字幕（`yt-dlp --write-subs --write-auto-subs --skip-download --sub-format vtt`） |
 | 无字幕视频 / 本地 mp4 | `ffmpeg -i in.mp4 -vn -ac 1 -ar 16000 audio.wav` 后走 faster-whisper（`scripts/ingest_media.sh`） |
+| B 站（实战教训，直连必撞） | 元数据与直链走 `r.jina.ai` 代理（直连 API 返回 412 风控页）；`playurl` 必须用 avid（bvid 会 401）；单集下载失败换 `durl[0].backup_url` 备链；出处链接格式 `?p=<集>&t=<秒>` |
 | 多集系列批量转写 | 逐集按上法抽音频成 `sources/media/NN.wav`，然后 `python3 scripts/asr.py <系列目录> --prompt "<术语 hotwords>"` —— 转写全部音频并合并成 `sources/raw.md`，每集自带 `# 第N集` 标题 |
 | 关键画面（板书 / PPT / 图表） | `ffmpeg -vf fps=1/30` 抽帧 → 帧按 `frames/epNN-MMSS.jpg` 命名（MM:SS 分秒，秒必须 <60）→ 需要理解画面时用 `gsk understand_images -i <frame>`，**返回原文存同名 `.txt`**——被卡片引用的帧必须带 `.txt`，且 `.txt` 一旦存在不重做 |
 | PDF | `pdftotext -layout`；表格多的页面 fallback 到 `pdfplumber` |
@@ -122,7 +123,7 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 2. **可执行** —— 能翻译成一个具体动作
 3. **任务价值** —— 能解决读者真实会碰到的问题
 
-三缺一的卡不进课件正文，移到 `appendix/background.md`（背景知识），课件里只用一行引用带过。
+三缺一的卡不进课件正文：**把卡片状态改为「附录级」**（不移动文件，附录由渲染脚本自动汇总），课件里只用一行引用带过。
 
 ### 审稿可以交给子 agent，但判定权和改稿权要分开
 
@@ -205,7 +206,7 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 | 元素 | 上限 |
 |---|---|
 | 单屏正文 | 180 字 |
-| 单张卡片 | 120 字 |
+| 单张卡片（结论+展开） | ≤160 字，以阶段 2 为准 |
 | 标题 | 24 字 |
 | 全课件总节数 | 7 ± 2 节（超出就分册） |
 
