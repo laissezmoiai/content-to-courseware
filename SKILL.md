@@ -56,7 +56,6 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 | 无字幕视频 / 本地 mp4 | `ffmpeg -i in.mp4 -vn -ac 1 -ar 16000 audio.wav` 后走 faster-whisper（`scripts/ingest_media.sh`） |
 | 多集系列批量转写 | 逐集按上法抽音频成 `sources/media/NN.wav`，然后 `python3 scripts/asr.py <系列目录> --prompt "<术语 hotwords>"` —— 转写全部音频并合并成 `sources/raw.md`，每集自带 `# 第N集` 标题 |
 | 关键画面（板书 / PPT / 图表） | `ffmpeg -vf fps=1/30` 抽帧 → 帧按 `frames/epNN-MMSS.jpg` 命名（MM:SS 分秒，秒必须 <60）→ 需要理解画面时用 `gsk understand_images -i <frame>`，**返回原文存同名 `.txt`**——被卡片引用的帧必须带 `.txt`，且 `.txt` 一旦存在不重做 |
-| 多集系列批量转写 | 逐集按上法抽音频成 `sources/media/NN.wav`，然后 `python3 scripts/asr.py <系列目录> --prompt "<术语 hotwords>"` 一次转写全部集并合并成 `sources/raw.md`，每集自带 `# 第N集` 标题 |
 | PDF | `pdftotext -layout`；表格多的页面 fallback 到 `pdfplumber` |
 | DOCX / PPTX | `python-docx` / `python-pptx`，按段落和页码输出 |
 | 扫描件 / 图片 | `gsk understand_images -i <path> -r "逐段转写图中文字，保留层级"` |
@@ -78,7 +77,7 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 3. 哪些是作者自己的判断，哪些是引用别人的？
 4. 它回答了什么问题，**没回答什么**？—— 这一条直接决定课件的「边界」页
 
-切段完成后**立即冻结**：`python3 scripts/coverage_reverse.py <系列目录> --freeze`。此后矩阵只读；确需改段用 `--refreeze "原因"`，会留痕（改了会留痕，不是改不了）。冻结必须先于抽卡——冻结时 cards/ 里已有卡片，验收会降级为警告「不能证明切段先于抽卡」。
+切段完成后**立即冻结**：`python3 scripts/coverage_reverse.py <系列目录> --freeze`。此后矩阵只读；确需改段用 `--refreeze "原因"`，会留痕（改了会留痕，不是改不了）。冻结必须先于抽卡——`--freeze` 时 cards/ 里已有卡片会**直接拒绝**；验收时若 lock 记录显示冻结时已有卡，降级为警告「不能证明切段先于抽卡」。
 
 ## 阶段 2 · 抽卡（Extract）
 
@@ -169,7 +168,19 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 
 ## 阶段 4 · 融合（Merge，多系列时执行，单系列跳过）
 
-`python3 scripts/check_merge.py library --write-index` —— 判据：每张原始卡在 merge-log 恰好登记一次、去向为合成卡编号/附录/丢弃+说明、关系限 重复/互补/冲突/独有、合成卡重走忠实性回查。登记表、主题树、冲突表模板都在 `library/` 下。
+`python3 scripts/check_merge.py library --write-index` —— 判据：每张原始卡在 merge-log 恰好登记一次、去向为合成卡编号/附录/丢弃+说明、关系限 重复/互补/冲突/独有、合成卡重走忠实性回查。
+
+`library/` 骨架与各文件格式（仓库 `templates/library/` 下有可直接复制的空表）：
+
+| 文件 | 格式 |
+|---|---|
+| `registry.md` | 表：系列代号 / 卡片前缀 / 来源链接 / 阶段 / 覆盖率 / 卡片数 |
+| `topic-map.md` | 每节点一行 `## T01 主题名`（编号 T 两位起） |
+| `glossary.md` | 表：误写 / 正写 / 仅限上下文（留空的行才参与全局替换核对） |
+| `merge-log.md` | 表：卡片编号 / 主题节点 / 关系 / 去向 / 说明 |
+| `conflicts.md` | 表：冲突卡 / 说法A / 说法B / 裁决 / 依据 |
+| `series/<代号>/coverage.md` | 表：段 / 定位 / 时长 / 性质 / 讲了什么 / 依据帧 / 去向 / 理由 |
+| `series/<代号>/cards/` | 每卡一文件，格式见阶段 2 模板；步骤卡（S）额外必填 路径（1–7 步每步一行）/ 预期结果 / 截图 / 画面识别 |
 
 ## 阶段 5 · 组课（Compose）
 
@@ -214,7 +225,7 @@ description: 把视频链接/视频文件、PDF/Word/PPT 文档、电子书或�
 ## 固定要求（每次都执行，不需要用户重复）
 
 1. 沿用 `library/` 里的术语表和主题树；主题树只许新增节点，不许改名改编号。
-2. 先建覆盖率矩阵，再抽卡。
+2. 先建覆盖率矩阵，再抽卡（完整档；快速档豁免）。
 3. 交付时贴出每个检查脚本的原始输出，不许只写「通过」。
 4. 交付时单独列三样：没有对照画面核过的卡、标了推断的句子、拿不准的术语。
 5. 融合时遇到冲突不自行裁决，全部列进冲突表等用户定。

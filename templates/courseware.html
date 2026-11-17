@@ -1,128 +1,72 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>课件标题</title>
 <style>
-  :root{
-    --bg:#FAFAF8; --ink:#1A1A1A; --ink-2:#6B6B6B;
-    --line:#E5E5E0; --accent:#2F5D50;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-    font-size:16px; line-height:1.75;
-  }
-  .wrap{max-width:820px; margin:0 auto; padding:80px 24px 120px}
-  .screen{padding:72px 0; border-bottom:1px solid var(--line)}
-  .screen:first-child{border-bottom:none; padding-top:0}
-  .screen:last-child{border-bottom:none}
-
-  .cover h1{font-size:40px; line-height:1.15; font-weight:700; margin:0 0 16px}
-  .cover .sub{color:var(--ink-2); font-size:16px}
-  .meta{color:var(--ink-2); font-size:13px; margin-top:32px}
-  .meta span{margin-right:16px}
-
-  h2{font-size:28px; line-height:1.3; font-weight:600; margin:0 0 8px}
-  .kicker{color:var(--accent); font-size:13px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px}
-  .lede{color:var(--ink-2); margin:0 0 32px}
-
-  .card{
-    border:1px solid var(--line); border-left:3px solid var(--accent);
-    padding:24px 24px 20px; margin:0 0 16px; background:#fff;
-  }
-  .card.case{border-left-style:dashed}
-  .card.counter{border-left-color:#3A3A3A}
-  .card h3{font-size:18px; line-height:1.4; font-weight:600; margin:0 0 8px}
-  .card p{margin:0 0 12px}
-  .card .src{color:var(--ink-2); font-size:13px; margin:0}
-
-  ul.check{list-style:none; padding:0; margin:0}
-  ul.check li{padding-left:20px; position:relative; margin-bottom:8px}
-  ul.check li::before{content:"—"; position:absolute; left:0; color:var(--accent)}
-
-  .quiz{border:1px solid var(--line); padding:24px; background:#fff}
-  .quiz .q{font-weight:600; margin:0 0 12px}
-  .quiz .a{color:var(--ink-2); font-size:14px; border-top:1px solid var(--line); padding-top:12px; margin-top:16px}
-
-  .cheat{background:#fff; border:1px solid var(--line); padding:24px}
-  .cheat ol{margin:0; padding-left:20px}
-  .cheat li{margin-bottom:8px}
-
-  .boundary{color:var(--ink-2); font-size:14px; border-top:1px solid var(--line); padding-top:24px}
+:root { --ink:#1a1a2e; --accent:#4a3f9f; --bg:#f7f6fb; --line:#e3e0ef; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:"PingFang SC","Microsoft YaHei",sans-serif; color:var(--ink); background:var(--bg); line-height:1.7; }
+header { padding:48px 32px 32px; background:#fff; border-bottom:2px solid var(--line); }
+h1 { font-size:28px; margin-bottom:8px; }
+header .meta { color:#666; font-size:14px; }
+header .meta span { margin-right:16px; }
+.sourcing { margin-top:12px; padding:10px 14px; background:var(--bg); border-left:3px solid var(--accent); font-size:13px; color:#555; }
+.route { margin-top:16px; padding:14px 18px; background:#fff; border:1px solid var(--line); border-radius:8px; }
+.route li { margin:4px 0 4px 18px; font-size:14px; }
+main { max-width:860px; margin:0 auto; padding:24px 16px; }
+section.screen.lesson { background:#fff; border:1px solid var(--line); border-radius:12px; padding:28px; margin:24px 0; }
+section.lesson > h2 { font-size:22px; margin-bottom:12px; }
+.goal { padding:10px 14px; background:#eef7ee; border-radius:8px; margin-bottom:16px; font-weight:500; }
+article.card { border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin:16px 0; background:#fff; }
+article.card .cap { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.tag { font-size:12px; padding:2px 10px; border-radius:99px; background:var(--accent); color:#fff; }
+.cid { font-size:12px; color:#999; font-family:monospace; }
+article.card h3 { font-size:17px; margin:6px 0 10px; }
+p.row { font-size:14px; margin:6px 0; }
+p.row b { color:var(--accent); margin-right:8px; }
+ol.steps { margin:8px 0 8px 22px; }
+ol.steps li { margin:6px 0; font-size:14px; }
+figure { margin:12px 0; }
+figure img { max-width:100%; border:1px solid var(--line); border-radius:8px; }
+figcaption { font-size:12px; color:#888; margin-top:4px; }
+a.src, span.src { display:inline-block; font-size:13px; margin:4px 8px 0 0; color:var(--accent); }
+.practice { margin-top:18px; padding:12px 16px; background:#fdf6e9; border-radius:8px; font-size:14px; }
+.cheatsheet { margin-top:14px; padding:12px 16px; background:#eef2fb; border-radius:8px; font-size:14px; }
+footer { padding:24px 32px 48px; }
+.appendix { max-width:860px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px 28px; }
+.appendix h2 { font-size:18px; margin-bottom:10px; }
+.appendix li { margin:6px 0 6px 18px; font-size:14px; }
+.note { font-size:12px; color:#b58a00; margin-right:6px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <!-- 封面 -->
-  <section class="screen cover">
-    <div class="kicker">Courseware · 速读课件</div>
-    <h1>课件标题（≤24 字）</h1>
-    <p class="sub">一句话说明：学完这份课件，你能做到什么。</p>
-    <p class="meta">
-      <span>来源：视频 / 书籍 / 文档名称</span>
-      <span>时长：90 分钟</span>
-      <span>知识卡：14 张</span>
-    </p>
-  </section>
-
-  <!-- 每节一个 screen -->
-  <section class="screen">
-    <div class="kicker">Lesson 01</div>
-    <h2>这一节的目标（≤24 字）</h2>
-    <p class="lede">学完你能：做出一个具体的动作（≤40 字）</p>
-
-    <!-- 卡片：framework / principle -->
-    <article class="card">
-      <h3>框架：卡片标题</h3>
-      <p>结论 + 展开，合计 ≤120 字。写不下就拆成两张卡。</p>
-      <p class="src">出处 · [00:42:10]</p>
-    </article>
-
-    <!-- 卡片：案例 -->
-    <article class="card case">
-      <h3>案例：卡片标题</h3>
-      <p>对象、动作、结果，三段式。</p>
-      <p class="src">出处 · [p.118]</p>
-    </article>
-
-    <!-- 卡片：反例 -->
-    <article class="card counter">
-      <h3>反例：常见的错误做法</h3>
-      <p>错在哪、为什么当时觉得对、代价是什么。</p>
-      <p class="src">出处 · [00:58:02]</p>
-    </article>
-  </section>
-
-  <!-- 自测 -->
-  <section class="screen">
-    <div class="kicker">Self-check</div>
-    <h2>自测</h2>
-    <div class="quiz">
-      <p class="q">如果……你会怎么做？（情境题，不给标准答案）</p>
-      <p class="a"><strong>参考要点：</strong>先看什么 → 再判断什么 → 最后排除什么。</p>
-    </div>
-  </section>
-
-  <!-- 速查 -->
-  <section class="screen">
-    <div class="kicker">Cheatsheet</div>
-    <h2>这一节的判断清单</h2>
-    <div class="cheat">
-      <ol>
-        <li>第一步看什么</li>
-        <li>第二步判断什么</li>
-        <li>什么情况下停手</li>
-      </ol>
-    </div>
-    <p class="boundary">
-      <strong>边界：</strong>这份材料没覆盖什么，什么情况下这套方法不适用。
-    </p>
-  </section>
-
+<header>
+<h1>课件标题</h1>
+<div class="meta">
+档位：完整档 · <span id="n-lessons">0</span> 节 · <span id="n-cards">0</span> 张知识卡 · <span id="n-figures">0</span> 图
 </div>
+<p class="sourcing">取材说明：蒸馏自 <N> 集共 <总分钟> 分钟，覆盖率 <NN>%。</p>
+<ul class="route">
+<li>开场 <a class="src" href="#">第1集 00:00</a></li>
+</ul>
+</header>
+<main>
+<section class="screen lesson" id="s01">
+<h2>第一节标题</h2>
+<p class="goal">学完你能做到：……</p>
+<!--CARD A-P-01-->
+<div class="practice"><p>练习：……</p></div>
+<div class="cheatsheet"><p>速查：……</p></div>
+</section>
+</main>
+<footer>
+<div class="appendix">
+<h2>附录 · 背景与备用卡</h2>
+<ul>
+<!--APPENDIX-CARDS-->
+</ul>
+</div>
+</footer>
 </body>
 </html>
